@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+var { validateBlogData } = require("./validation/blogs")
+
 const sampleBlogs = [
     {
           title: "dicta",
@@ -57,8 +59,9 @@ router.get('/', function(req, res, next) {
 
 });
 
-
+//get
 router.get('/all', function(req, res, next) {
+    
     console.log(sampleBlogs)
     res.json(
         {success : true,
@@ -66,7 +69,7 @@ router.get('/all', function(req, res, next) {
   
     
   });
-  router.get('/single/:blogTitleToGet', function(req, res, next) {
+router.get('/single/:blogTitleToGet', function(req, res, next) {
 
     const blogtoFind = req.params.blogTitleToGet
 
@@ -87,8 +90,109 @@ router.get('/all', function(req, res, next) {
   
     
   });
+//post
+router.post('/create-one', (req, res) => {
+	
+    const title = req.body.title
+    const text = req.body.text
+    const author = req.body.author
+    const category = req.body.category
+    
+  
+    const blogData = {
+      title,
+      text,
+      author,
+      category,
+      createdAt: new Date(),
+      lastModified: new Date()
+    }
+  
+    const blogDataCheck = validateBlogData(blogData)
+  
+    if (blogDataCheck.isValid === false) {
+      res.json({
+        success: false,
+        message: blogDataCheck.message
+      })
+      return;
+    }
+  
+    sampleBlogs.push(blogData)
+  
+    console.log("blogList ", sampleBlogs)
+  
+    res.json({
+      success: true
+    })
+  
+  })
+//update
+router.put('/update/:blogtoFind', (req, res,) => {
 
-  router.delete('/delete/:blogTitleToDelete', (req, res)=> {
+  const title = req.body.title
+  const text = req.body.text
+  const author = req.body.author
+  const category = req.body.category
+
+  const blogtoFind = req.params.blogtoFind
+
+  const blogIndex = sampleBlogs.findIndex((blog)=>{
+      if (blog.title === blogtoFind){
+          return true
+      }
+      else {
+          return false
+      }
+  })
+
+
+  let originalBlog = sampleBlogs[blogIndex] 
+
+  
+
+  let updateBlog = {
+  
+    title: title,
+    text : text,
+    author: author,
+    category: category,
+    
+    lastModified: new Date()
+
+
+
+  }
+  
+
+  sampleBlogs[blogIndex] = updateBlog
+
+  const blogDataCheck = validateBlogData(sampleBlogs[blogIndex])
+  
+  if (blogDataCheck.isValid === false) {
+    res.json({
+      success: false,
+      message: blogDataCheck.message
+    })
+    return;
+  }
+
+
+
+
+
+
+
+  
+  res.json(
+      {success : true,
+      });
+
+  
+});
+
+//delete
+router.delete('/delete/:blogTitleToDelete', (req, res)=> {
 
    
 
